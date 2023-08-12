@@ -5,6 +5,8 @@ const context = canvas.getContext('2d');
 
 const FINGER_COLOR = '#ff0';
 const ARROW_COLOR = 'red';
+const BORDER_WIDTH = 5;
+const BORDER_COLOR = 'black';
 
 function rotateVector(vector, angleRad) {
     const sin = Math.sin(angleRad);
@@ -38,12 +40,15 @@ class FingerBall {
         this.radius = radius;
         this.lastTime = 0;
         this.draw();
+        this.drawFirstBorder();
         window.requestAnimationFrame(this.nextTick);
     }
 
     nextTick = (t) => {
         const delta = t - this.lastTime;
         this.lastTime = t;
+
+        this.drawCircle();
 
         // if (delta > 1000) {
         //     //todo sometimes fix that
@@ -87,20 +92,22 @@ class FingerBall {
         window.requestAnimationFrame(this.nextTick);
     };
 
+    
+    drawCircle () {
+        context.fillStyle = FINGER_COLOR;
+        context.beginPath();
+        context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
+        context.fill();
+    }
+
     draw() {
-        const drawCircle = () => {
-            context.fillStyle = FINGER_COLOR;
-            context.beginPath();
-            context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
-            context.fill();
-        }
         const drawNail = () => {
             const basicPoint = { x: 0, y: this.radius / 2 };
-            const angle = Math.atan2(this.topSpeed, this.leftSpeed);
+            const angle = Math.atan2(this.topSpeed, this.leftSpeed) - Math.PI / 2;
             const points = [
-                rotateVector(basicPoint, 0 + angle - Math.PI / 2),
-                rotateVector(basicPoint, Math.PI * 2 / 3 + angle - Math.PI / 2),
-                rotateVector(basicPoint, Math.PI * 2 * 2 / 3 + angle - Math.PI / 2),
+                rotateVector(basicPoint, 0 + angle),
+                rotateVector(basicPoint, Math.PI * 2 / 3 + angle),
+                rotateVector(basicPoint, Math.PI * 2 * 2 / 3 + angle),
             ].map(p => { return { x: p.x + this.centerX, y: p.y + this.centerY }; });
 
             const moveTo = (p) => {
@@ -118,9 +125,34 @@ class FingerBall {
             lineTo(points[0]);
             context.fill();
         }
+        const drawBorder = () => {
+            const angle = Math.atan2(this.topSpeed, this.leftSpeed) - Math.PI / 2;
+            // const realRadius = this.radius - BORDER_WIDTH / 10; //todo why it works lol?
+            const realRadius = this.radius; //todo why it works lol?
+            // const realRadius = this.radius - BORDER_WIDTH;
+            
+
+            context.lineWidth = BORDER_WIDTH;
+            context.strokeStyle = BORDER_COLOR;
+            context.beginPath();
+            context.arc(this.centerX, this.centerY, realRadius, angle, angle + Math.PI);
+            context.stroke();
+        }
         
-        drawCircle();
+        this.drawCircle();
         drawNail();
+        drawBorder();
+    }
+
+    drawFirstBorder() {
+        const angle = Math.atan2(this.topSpeed, this.leftSpeed) + Math.PI / 2;
+        const realRadius = this.radius; //todo why it works lol?        
+
+        context.lineWidth = BORDER_WIDTH;
+        context.strokeStyle = BORDER_COLOR;
+        context.beginPath();
+        context.arc(this.centerX, this.centerY, realRadius, angle, angle + Math.PI);
+        context.stroke();
     }
 }
 
