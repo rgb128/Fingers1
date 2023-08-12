@@ -5,7 +5,6 @@ const context = canvas.getContext('2d');
 
 const FINGER_COLOR = '#ff0';
 const ARROW_COLOR = 'red';
-const ARROW_WIDTH = 5;
 
 function rotateVector(vector, angleRad) {
     const sin = Math.sin(angleRad);
@@ -44,7 +43,6 @@ class FingerBall {
 
     nextTick = (t) => {
         const delta = t - this.lastTime;
-        console.log(delta);
         this.lastTime = t;
 
         // if (delta > 1000) {
@@ -90,13 +88,42 @@ class FingerBall {
     };
 
     draw() {
-        context.fillStyle = FINGER_COLOR;
-        context.beginPath();
-        context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
-        context.fill();
-        //todo draw nail
+        const drawCircle = () => {
+            context.fillStyle = FINGER_COLOR;
+            context.beginPath();
+            context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
+            context.fill();
+        }
+        const drawNail = () => {
+            const basicPoint = { x: 0, y: this.radius / 2 };
+            const angle = Math.atan2(this.topSpeed, this.leftSpeed);
+            const points = [
+                rotateVector(basicPoint, 0 + angle - Math.PI / 2),
+                rotateVector(basicPoint, Math.PI * 2 / 3 + angle - Math.PI / 2),
+                rotateVector(basicPoint, Math.PI * 2 * 2 / 3 + angle - Math.PI / 2),
+            ].map(p => { return { x: p.x + this.centerX, y: p.y + this.centerY }; });
+
+            const moveTo = (p) => {
+                context.moveTo(p.x, p.y);
+            }
+            const lineTo = (p) => {
+                context.lineTo(p.x, p.y);
+            }
+
+            context.fillStyle = ARROW_COLOR;
+            context.beginPath();
+            moveTo(points[0]);
+            lineTo(points[1]);
+            lineTo(points[2]);
+            lineTo(points[0]);
+            context.fill();
+        }
+        
+        drawCircle();
+        drawNail();
     }
 }
 
-new FingerBall(47, 23, 250, 250, 20);
+new FingerBall(107, 23, 250, 250, 20);
+// new FingerBall(13, 91, 250, 250, 20);
 
